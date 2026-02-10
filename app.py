@@ -16,16 +16,37 @@ if _HF_TOKEN:
 
 MODEL_ID = os.environ.get("SAM_AUDIO_MODEL", "facebook/sam-audio-large")
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DTYPE_NAME = os.environ.get("SAM_AUDIO_DTYPE", "auto").strip().lower()
 
 _model = None
 _processor = None
+
+
+def resolve_dtype():
+    if DEVICE != "cuda":
+        return None
+
+    if DTYPE_NAME in {"fp16", "float16", "half"}:
+        return torch.float16
+    if DTYPE_NAME in {"bf16", "bfloat16"}:
+        return torch.bfloat16
+    if DTYPE_NAME in {"fp32", "float32"}:
+        return torch.float32
+    # auto
+    return torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16
 
 def get_model():
     """Charge le modèle + processor recommandés sur la page HF du checkpoint."""
     global _model, _processor
     if _model is None or _processor is None:
+        dtype = resolve_dtype()
+        model_kwargs = {}
+        if dtype is not None:
+            model_kwargs["torch_dtype"] = dtype
+
         _model = SAMAudio.from_pretrained(
             MODEL_ID,
+            **model_kwargs,
         ).to(DEVICE).eval()
 
         _processor = SAMAudioProcessor.from_pretrained(
@@ -80,7 +101,16 @@ def separate(audio_file, description, anchors_json, reranking_candidates, predic
     if reranking_candidates and int(reranking_candidates) > 0:
         kwargs["reranking_candidates"] = int(reranking_candidates)
 
-    result = model.separate(inputs, predict_spans=bool(predict_spans), **kwargs)
+    try:
+        with torch.autocast(device_type="cuda", dtype=resolve_dtype(), enabled=(DEVICE == "cuda")):
+            result = model.separate(inputs, predict_spans=bool(predict_spans), **kwargs)
+    except torch.OutOfMemoryError as err:
+        if DEVICE == "cuda":
+            torch.cuda.empty_cache()
+        raise gr.Error(
+            "CUDA OutOfMemory: essaye un modèle plus petit, désactive predict_spans, "
+            "laisse reranking_candidates à 0, et configure SAM_AUDIO_DTYPE=bf16 (ou fp16)."
+        ) from err
 
     # Sauver en wav (target + residual)
     sr = processor.audio_sampling_rate
