@@ -14,7 +14,7 @@ _HF_TOKEN = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN
 if _HF_TOKEN:
     login(token=_HF_TOKEN)
 
-MODEL_ID = os.environ.get("SAM_AUDIO_MODEL", "facebook/sam-audio-large-tv")
+MODEL_ID = os.environ.get("SAM_AUDIO_MODEL", "facebook/sam-audio-large")
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 _model = None
@@ -121,7 +121,7 @@ def separate(audio_file, description, anchors_json, reranking_candidates, predic
     return target_path, residual_path, spans_txt
 
 
-with gr.Blocks(title="SAM-Audio (facebook/sam-audio-large-tv)") as demo:
+with gr.Blocks(title=f"SAM-Audio ({MODEL_ID})") as demo:
     gr.Markdown(
         """
 # SAM-Audio — isolation de sons par prompt texte (et ancres temporelles)
