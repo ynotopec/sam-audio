@@ -20,30 +20,8 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 _model = None
 _processor = None
 
-
-#def get_model():
-#    global _model, _processor
-#    if _model is None or _processor is None:
-#        _model = SAMAudio.from_pretrained(MODEL_ID).to(DEVICE).eval()
-#        _processor = SAMAudioProcessor.from_pretrained(MODEL_ID)
-
-#        _model = SAMAudio.from_pretrained(
-#            MODEL_ID,
-#            token=os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN"),
-#            proxies=None,
-#            resume_download=False,
-#        ).to(DEVICE).eval()
-
-#        _processor = SAMAudioProcessor.from_pretrained(
-#            MODEL_ID,
-#            token=os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN"),
-#            proxies=None,
-#            resume_download=False,
-#        )
-
-#    return _model, _processor
-
 def get_model():
+    """Charge le modèle + processor recommandés sur la page HF du checkpoint."""
     global _model, _processor
     if _model is None or _processor is None:
         _model = SAMAudio.from_pretrained(
