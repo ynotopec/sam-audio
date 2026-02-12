@@ -14,7 +14,8 @@ _HF_TOKEN = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN
 if _HF_TOKEN:
     login(token=_HF_TOKEN)
 
-MODEL_ID = os.environ.get("SAM_AUDIO_MODEL", "facebook/sam-audio-large")
+MODEL_ID = os.environ.get("SAM_AUDIO_MODEL", "facebook/sam-audio-small")
+#large")
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 DTYPE_NAME = os.environ.get("SAM_AUDIO_DTYPE", "auto").strip().lower()
 
