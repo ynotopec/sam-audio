@@ -2,6 +2,7 @@ import argparse
 import os
 import json
 import tempfile
+import threading
 import torch
 import torchaudio
 import gradio as gr
@@ -21,6 +22,9 @@ DTYPE_NAME = os.environ.get("SAM_AUDIO_DTYPE", "auto").strip().lower()
 
 _model = None
 _processor = None
+_unload_timer = None
+_model_lock = threading.Lock()
+MODEL_IDLE_TIMEOUT_SECONDS = int(os.environ.get("SAM_AUDIO_IDLE_TIMEOUT_SECONDS", "180"))
 
 
 def resolve_dtype():
@@ -38,22 +42,47 @@ def resolve_dtype():
 
 def get_model():
     """Charge le modèle + processor recommandés sur la page HF du checkpoint."""
-    global _model, _processor
-    if _model is None or _processor is None:
-        dtype = resolve_dtype()
-        model_kwargs = {}
-        if dtype is not None:
-            model_kwargs["torch_dtype"] = dtype
+    with _model_lock:
+        global _model, _processor
+        if _model is None or _processor is None:
+            dtype = resolve_dtype()
+            model_kwargs = {}
+            if dtype is not None:
+                model_kwargs["torch_dtype"] = dtype
 
-        _model = SAMAudio.from_pretrained(
-            MODEL_ID,
-            **model_kwargs,
-        ).to(DEVICE).eval()
+            _model = SAMAudio.from_pretrained(
+                MODEL_ID,
+                **model_kwargs,
+            ).to(DEVICE).eval()
 
-        _processor = SAMAudioProcessor.from_pretrained(
-            MODEL_ID,
-        )
-    return _model, _processor
+            _processor = SAMAudioProcessor.from_pretrained(
+                MODEL_ID,
+            )
+        _schedule_model_unload()
+        return _model, _processor
+
+
+def unload_model():
+    global _model, _processor, _unload_timer
+    with _model_lock:
+        _model = None
+        _processor = None
+        _unload_timer = None
+        if DEVICE == "cuda":
+            torch.cuda.empty_cache()
+
+
+def _schedule_model_unload():
+    global _unload_timer
+    if MODEL_IDLE_TIMEOUT_SECONDS <= 0:
+        return
+
+    if _unload_timer is not None:
+        _unload_timer.cancel()
+
+    _unload_timer = threading.Timer(MODEL_IDLE_TIMEOUT_SECONDS, unload_model)
+    _unload_timer.daemon = True
+    _unload_timer.start()
 
 
 def parse_anchors(anchors_json: str):
