@@ -15,3 +15,6 @@ nvidia-ml-py
 pynvml
 
 setuptools<81
+fastapi
+uvicorn[standard]
+python-multipart
