@@ -14,7 +14,7 @@ The installer is idempotent and uses `uv` to create/update the virtual environme
 ~/venv/sam-audio
 ```
 
-SAM-Audio is installed from the official GitHub repository because it is not published as a PyPI package.
+SAM-Audio and its official GitHub-only components are installed by `install.sh` after the PyPI dependencies. They are installed with explicit runtime dependencies so Linux aarch64 systems such as DGX Spark do not fail on the optional `decord` video wheel dependency.
 
 You can override the Python version or environment path:
 
