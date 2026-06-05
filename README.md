@@ -14,6 +14,8 @@ The installer is idempotent and uses `uv` to create/update the virtual environme
 ~/venv/sam-audio
 ```
 
+SAM-Audio is installed from the official GitHub repository because it is not published as a PyPI package.
+
 You can override the Python version or environment path:
 
 ```bash

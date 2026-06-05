@@ -2,11 +2,9 @@ torch
 torchaudio
 gradio
 huggingface_hub<1.0.0
-sam_audio
-#git+https://github.com/facebookresearch/sam-audio.git
+# SAM-Audio is not published on PyPI; install it from the official repo.
+git+https://github.com/facebookresearch/sam-audio.git
 #git+https://github.com/facebookresearch/ImageBind.git
-argparse
-
 transformers
 safetensors
 
