@@ -13,6 +13,10 @@ from fastapi import Depends, FastAPI, File, Form, Header, HTTPException, UploadF
 from fastapi.responses import RedirectResponse
 from gradio.routes import mount_gradio_app
 from huggingface_hub import login
+from xformers_compat import ensure_xformers_ops
+
+ensure_xformers_ops()
+
 from sam_audio import SAMAudio, SAMAudioProcessor
 
 _HF_TOKEN = os.environ.get("HF_TOKEN") or os.environ.get("HUGGING_FACE_HUB_TOKEN")
