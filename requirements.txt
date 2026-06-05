@@ -17,7 +17,13 @@ tqdm
 timm
 ftfy
 regex
+types-regex
 iopath
+fvcore
+av
+parameterized
+networkx
+soundfile
 omegaconf
 msgspec
 pillow

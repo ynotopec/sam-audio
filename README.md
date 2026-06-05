@@ -14,7 +14,7 @@ The installer is idempotent and uses `uv` to create/update the virtual environme
 ~/venv/sam-audio
 ```
 
-SAM-Audio and its official GitHub-only components are installed by `install.sh` after the PyPI dependencies. They are installed with explicit runtime dependencies so Linux aarch64 systems such as DGX Spark do not fail on the optional `decord` video wheel dependency. The app also includes an import-time `xformers.ops` fallback for the default PyTorch SDPA inference path, because xformers wheels are not consistently available on Linux aarch64.
+SAM-Audio and its official GitHub-only components are installed by `install.sh` after the PyPI dependencies. They are installed with explicit runtime dependencies so Linux aarch64 systems such as DGX Spark do not fail on the optional `decord` video wheel dependency. The explicit runtime dependencies include ImageBind's PyTorchVideo stack (`fvcore`, `av`, `parameterized`, and `networkx`) so SAM-Audio's visual ranker can be imported when the model initializes. The installer finishes with an import check for ImageBind and SAM-Audio, which fails early if a runtime dependency is still missing. The app also includes an import-time `xformers.ops` fallback for the default PyTorch SDPA inference path, because xformers wheels are not consistently available on Linux aarch64.
 
 You can override the Python version or environment path:
 
