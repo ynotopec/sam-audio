@@ -6,7 +6,7 @@ gradio
 huggingface_hub<1.0.0
 transformers>=4.54.0
 safetensors
-numpy
+numpy>=1.24.2,<2.0.0
 einops
 pydub
 torchdiffeq
@@ -24,6 +24,16 @@ av
 parameterized
 networkx
 soundfile
+librosa
+torchlibrosa
+braceexpand
+wget
+wandb
+llvmlite
+scipy>=1.15.0
+pandas>=2.2.0
+h5py
+progressbar
 omegaconf
 msgspec
 pillow

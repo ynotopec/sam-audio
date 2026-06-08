@@ -47,8 +47,24 @@ from xformers_compat import ensure_xformers_ops
 ensure_xformers_ops()
 
 checks = (
+    # ImageBind visual ranker imports.
     "imagebind.data",
     "imagebind.models.imagebind_model",
+    # CLAP text ranker runtime imports. Import these explicitly because the
+    # CLAP package is installed with --no-deps along with the other Git-only
+    # SAM-Audio components.
+    "braceexpand",
+    "h5py",
+    "librosa",
+    "llvmlite",
+    "pandas",
+    "progressbar",
+    "scipy",
+    "soundfile",
+    "torchlibrosa",
+    "wandb",
+    "wget",
+    # SAM-Audio itself, after the optional xformers fallback is registered.
     "sam_audio",
 )
 missing = []
