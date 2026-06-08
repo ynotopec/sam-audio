@@ -34,6 +34,53 @@ mkdir -p "$(dirname "${VENV_DIR}")"
 "${UV_BIN}" pip install --python "${VENV_DIR}/bin/python" --upgrade -r requirements.txt
 "${UV_BIN}" pip install --python "${VENV_DIR}/bin/python" --upgrade --no-deps "${SAM_AUDIO_GIT_DEPS[@]}"
 
+"${VENV_DIR}/bin/python" - <<'PY'
+import importlib
+import sys
+
+from xformers_compat import ensure_xformers_ops
+
+# The app intentionally supports systems without an installable xformers wheel
+# by registering a local fallback before importing SAM-Audio. Mirror that import
+# path here so this install-time check validates the runtime configuration that
+# app.py actually uses.
+ensure_xformers_ops()
+
+checks = (
+    # ImageBind visual ranker imports.
+    "imagebind.data",
+    "imagebind.models.imagebind_model",
+    # CLAP text ranker runtime imports. Import these explicitly because the
+    # CLAP package is installed with --no-deps along with the other Git-only
+    # SAM-Audio components.
+    "braceexpand",
+    "h5py",
+    "librosa",
+    "llvmlite",
+    "pandas",
+    "progressbar",
+    "scipy",
+    "soundfile",
+    "torchlibrosa",
+    "wandb",
+    "wget",
+    # SAM-Audio itself, after the optional xformers fallback is registered.
+    "sam_audio",
+)
+missing = []
+for module in checks:
+    try:
+        importlib.import_module(module)
+    except Exception as err:
+        missing.append((module, err))
+
+if missing:
+    print("Runtime dependency check failed:", file=sys.stderr)
+    for module, err in missing:
+        print(f"- {module}: {err!r}", file=sys.stderr)
+    sys.exit(1)
+PY
+
 cat <<EOF
 Installed/updated ${PROJECT_NAME} in ${VENV_DIR}
 Run with: source run.sh 0.0.0.0 7860
