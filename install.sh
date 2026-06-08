@@ -38,6 +38,14 @@ mkdir -p "$(dirname "${VENV_DIR}")"
 import importlib
 import sys
 
+from xformers_compat import ensure_xformers_ops
+
+# The app intentionally supports systems without an installable xformers wheel
+# by registering a local fallback before importing SAM-Audio. Mirror that import
+# path here so this install-time check validates the runtime configuration that
+# app.py actually uses.
+ensure_xformers_ops()
+
 checks = (
     "imagebind.data",
     "imagebind.models.imagebind_model",
